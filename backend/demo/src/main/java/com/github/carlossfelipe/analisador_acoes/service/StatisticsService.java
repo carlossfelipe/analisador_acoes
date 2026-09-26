@@ -10,10 +10,9 @@ import com.github.carlossfelipe.analisador_acoes.repository.StockPriceRepository
 
 import lombok.RequiredArgsConstructor;
 
-
 @RequiredArgsConstructor
 @Service 
-public class AdminService {
+public class StatisticsService {
     private final CompanyRepository companyRepository;
     private final DividendRepository dividendRepository;
     private final FinancialIndicatorRepository financialIndicatorRepository;
@@ -28,5 +27,4 @@ public class AdminService {
             dividendRepository.count()
         );
     }
-
 }

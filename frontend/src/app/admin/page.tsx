@@ -1,47 +1,34 @@
 "use client";
 
 import { api } from "@/services/api";
-import { Estatistica } from "@/types";
+import { Company, Estatistica } from "@/types";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 
-const empresasRecentes = [
-  {
-    ticker: "PETR4",
-    nome: "Petrobras",
-    setor: "Petróleo, Gás e Biocombustíveis",
-  },
-  {
-    ticker: "VALE3",
-    nome: "Vale",
-    setor: "Materiais Básicos",
-  },
-  {
-    ticker: "WEGE3",
-    nome: "WEG",
-    setor: "Bens Industriais",
-  },
-  {
-    ticker: "ITUB4",
-    nome: "Itaú Unibanco",
-    setor: "Financeiro",
-  },
-];
 
 export default function AdminDashboard() {
   const [dadosEstatisticas, setEstatisticas] = useState<Estatistica | null>(null);
+  const [empresasRecentes, setEmpresasRecentes] = useState<Company[]>([]);
 
   useEffect(() => {
 
-    async function carregar() {
+    async function carregarEstatistica() {
       const dados = await api.getEstatisticas();
       setEstatisticas(dados);
 
     }
 
-    carregar();
+    async function carregarEmpresas() {
+      const dados = await api.getEmpresas();
+      setEmpresasRecentes(dados);
+
+    }
+
+    carregarEstatistica();
+    carregarEmpresas();
+
   }, []);
 
   const estatisticas = [
@@ -142,12 +129,12 @@ export default function AdminDashboard() {
                     <div>
                       <p className="font-semibold">{empresa.ticker}</p>
 
-                      <p className="text-sm text-gray-400">{empresa.nome}</p>
+                      <p className="text-sm text-gray-400">{empresa.legalName ?? "Nome não informado"}</p>
                     </div>
                   </div>
 
                   <span className="text-xs text-gray-500 max-w-48 text-right">
-                    {empresa.setor}
+                    {empresa.sector}
                   </span>
                 </div>
               ))}

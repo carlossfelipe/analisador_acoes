@@ -28,6 +28,27 @@ async function request<T>(path: string): Promise<T> {
   return response.json();
 }
 
+async function requestDelete(path: string): Promise<void> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    let message = `Erro ${response.status}`;
+
+    try {
+      const body = await response.json();
+      message = body.message ?? message;
+    } catch {}
+
+    throw new Error(message);
+  }
+}
+
 export const api = {
   getCompanies: () => request<Company[]>("/api/companies"),
   getCompany: (ticker: string) =>
@@ -52,5 +73,12 @@ export const api = {
     request<CompareResult[]>(
       `/api/companies/compare?tickers=${tickers.map(encodeURIComponent).join(",")}`
     ),
-  getEstatisticas: () => request<Estatistica>(`/api/admin/statistics`)
+
+
+  getEstatisticas: () => request<Estatistica>(`/api/admin/statistics`),
+  getEmpresas: () => request<Company[]>("/api/admin/companies"),
+  deletarEmpresa: (ticker: string) => requestDelete(`/api/admin/companies/${encodeURIComponent(ticker)}`),
+
+  
+
 };

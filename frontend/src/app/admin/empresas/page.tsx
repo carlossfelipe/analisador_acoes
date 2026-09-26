@@ -1,52 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
-type Empresa = {
-  ticker: string;
-  nome: string;
-  razaoSocial: string;
-  setor: string;
-  segmento: string;
-  status: "ATIVA" | "INATIVA";
-};
-
-const empresasIniciais: Empresa[] = [
-  {
-    ticker: "PETR4",
-    nome: "Petrobras",
-    razaoSocial: "Petróleo Brasileiro S.A.",
-    setor: "Petróleo, Gás e Biocombustíveis",
-    segmento: "Petróleo",
-    status: "ATIVA",
-  },
-  {
-    ticker: "VALE3",
-    nome: "Vale",
-    razaoSocial: "Vale S.A.",
-    setor: "Materiais Básicos",
-    segmento: "Mineração",
-    status: "ATIVA",
-  },
-  {
-    ticker: "WEGE3",
-    nome: "WEG",
-    razaoSocial: "WEG S.A.",
-    setor: "Bens Industriais",
-    segmento: "Máquinas e Equipamentos",
-    status: "ATIVA",
-  },
-  {
-    ticker: "ITUB4",
-    nome: "Itaú Unibanco",
-    razaoSocial: "Itaú Unibanco Holding S.A.",
-    setor: "Financeiro",
-    segmento: "Bancos",
-    status: "ATIVA",
-  },
-];
+import { api } from "@/services/api";
+import { Company } from "@/types";
+import { useEffect, useState } from "react";
 
 export default function EmpresasPage() {
+  const [empresasIniciais, setEmpresasIniciais] = useState<Company[]>([]);
   const [empresas, setEmpresas] = useState(empresasIniciais);
   const [busca, setBusca] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -56,29 +15,41 @@ export default function EmpresasPage() {
 
     return (
       empresa.ticker.toLowerCase().includes(termo) ||
-      empresa.nome.toLowerCase().includes(termo)
+      empresa.legalName.toLowerCase().includes(termo)
     );
   });
 
-  function excluirEmpresa(ticker: string) {
-    const confirmar = window.confirm(
-      `Deseja realmente excluir ${ticker}?`
-    );
+  async function excluirEmpresa(ticker: string) {
+    const confirmar = window.confirm(`Deseja realmente excluir ${ticker}?`);
 
     if (!confirmar) return;
 
-    setEmpresas((empresas) =>
-      empresas.filter((empresa) => empresa.ticker !== ticker)
-    );
+    try {
+      await api.deletarEmpresa(ticker);
+
+      setEmpresas((empresas) =>
+        empresas.filter((empresa) => empresa.ticker !== ticker),
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Não foi possível excluir a empresa.");
+    }
   }
+
+  useEffect(() => {
+    async function carregarEstatistica() {
+      const dados = await api.getEmpresas();
+      setEmpresasIniciais(dados);
+    }
+
+    carregarEstatistica();
+  }, []);
 
   return (
     <div>
       <header className="h-20 border-b border-white/10 flex items-center justify-between px-8">
         <div>
-          <h2 className="text-2xl font-bold">
-            Empresas
-          </h2>
+          <h2 className="text-2xl font-bold">Empresas</h2>
 
           <p className="text-sm text-gray-500">
             Gerencie as empresas cadastradas
@@ -138,31 +109,23 @@ export default function EmpresasPage() {
               <tbody>
                 {empresasFiltradas.map((empresa) => (
                   <tr
-                    key={empresa.ticker}
+                    key={empresa.ticker + empresa.cnpj}
                     className="border-b border-white/5 hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-5">
-                      <span className="font-bold">
-                        {empresa.ticker}
-                      </span>
+                      <span className="font-bold">{empresa.ticker}</span>
                     </td>
 
                     <td className="px-6 py-5">
-                      <p className="font-medium">
-                        {empresa.nome}
-                      </p>
-
-                      <p className="text-xs text-gray-500 mt-1">
-                        {empresa.razaoSocial}
-                      </p>
+                      <p className="font-medium">{empresa.legalName}</p>
                     </td>
 
                     <td className="px-6 py-5 text-sm text-gray-400">
-                      {empresa.setor}
+                      {empresa.sector}
                     </td>
 
                     <td className="px-6 py-5 text-sm text-gray-400">
-                      {empresa.segmento}
+                      {empresa.segment}
                     </td>
 
                     <td className="px-6 py-5">
@@ -178,9 +141,7 @@ export default function EmpresasPage() {
                         </button>
 
                         <button
-                          onClick={() =>
-                            excluirEmpresa(empresa.ticker)
-                          }
+                          onClick={() => excluirEmpresa(empresa.ticker)}
                           className="px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm"
                         >
                           Excluir
@@ -206,9 +167,7 @@ export default function EmpresasPage() {
           <div className="w-full max-w-2xl bg-[#151515] border border-white/10 rounded-2xl p-7">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-bold">
-                  Nova empresa
-                </h3>
+                <h3 className="text-xl font-bold">Nova empresa</h3>
 
                 <p className="text-sm text-gray-500 mt-1">
                   Cadastre uma nova empresa no sistema
@@ -225,9 +184,7 @@ export default function EmpresasPage() {
 
             <form className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="text-sm text-gray-400">
-                  Ticker
-                </label>
+                <label className="text-sm text-gray-400">Ticker</label>
 
                 <input
                   placeholder="PETR4"
@@ -236,9 +193,7 @@ export default function EmpresasPage() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400">
-                  Nome
-                </label>
+                <label className="text-sm text-gray-400">Nome</label>
 
                 <input
                   placeholder="Petrobras"
@@ -247,9 +202,7 @@ export default function EmpresasPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-sm text-gray-400">
-                  Razão social
-                </label>
+                <label className="text-sm text-gray-400">Razão social</label>
 
                 <input
                   placeholder="Petróleo Brasileiro S.A."
@@ -258,9 +211,7 @@ export default function EmpresasPage() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400">
-                  Setor
-                </label>
+                <label className="text-sm text-gray-400">Setor</label>
 
                 <input
                   placeholder="Petróleo, Gás e Biocombustíveis"
@@ -269,9 +220,7 @@ export default function EmpresasPage() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400">
-                  Segmento
-                </label>
+                <label className="text-sm text-gray-400">Segmento</label>
 
                 <input
                   placeholder="Petróleo"

@@ -149,8 +149,36 @@ public class CompanyService {
         return indicadores;
     }
 
+    public void deletarEmpresa(String ticker){
+        repository.deleteByTicker(ticker);
+    }
+
+    public List<CompanyDTO> listarEmpresasOrdenado() {
+        List<Company> companies = repository.findAllByOrderByCreatedAtDesc();
+
+        if (companies.isEmpty()) {
+            return List.of();
+        }
+
+        return companies.stream()
+                .map(company -> new CompanyDTO(
+                        company.getTicker(),
+                        company.getLegalName(),
+                        company.getCnpj(),
+                        company.getSector(),
+                        company.getSegment(),
+                        company.getStatus()))
+                .toList();
+    }
 
 
+
+
+
+
+
+
+    
     private BigDecimal calcularPeRatio(FinancialIndicator indicator) {
         BigDecimal price = indicadorPrecoEmpresa(indicator);
         BigDecimal earningsPerShare = indicator.getEarningsPerShare();
