@@ -37,4 +37,10 @@ export interface Dividend {
   amountPerShare: number;
 }
 
+export interface Estatistica {
+  empresas: number;
+  indicadores: number;
+  precos: number;
+  dividendos: number;
+}
 export interface CompareResult extends CompanyIndicators {}

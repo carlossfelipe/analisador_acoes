@@ -17,10 +17,11 @@ import com.github.carlossfelipe.analisador_acoes.service.CompanyService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RequiredArgsConstructor
-@Controller
+@RestController 
 @RequestMapping("/api/companies")
 public class CompanyController {
 

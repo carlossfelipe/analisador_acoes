@@ -4,7 +4,8 @@ import {
   FinancialIndicator,
   StockPrice,
   Dividend,
-  CompareResult
+  CompareResult,
+  Estatistica
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
@@ -50,5 +51,6 @@ export const api = {
   compareCompanies: (tickers: string[]) =>
     request<CompareResult[]>(
       `/api/companies/compare?tickers=${tickers.map(encodeURIComponent).join(",")}`
-    )
+    ),
+  getEstatisticas: () => request<Estatistica>(`/api/admin/statistics`)
 };
